@@ -1,80 +1,70 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+import { FormsModule, ReactiveFormsModule, FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
-
-interface Task {
-  id: number;
-  text: string;
-  completed: boolean;
-  dueDate: string;
-}
+import { User } from '../models/user.model';
 
 @Component({
   selector: 'app-home',
   templateUrl: 'home.page.html',
   styleUrls: ['home.page.scss'],
   standalone: true,
-  imports: [IonicModule, CommonModule, FormsModule]
+  imports: [IonicModule, CommonModule, FormsModule, ReactiveFormsModule]
 })
 export class HomePage {
-  tasks: Task[] = [];
-  newTask: string = '';
-  dueDate: string = '';
-  showError: boolean = false;
-  errorMessage: string = '';
-  today: string = new Date().toISOString();
+  userForm: FormGroup;
+  users: User[] = [];
+  isEditing = false;
+  editingUserId: number | null = null;
 
-  constructor() {}
+  constructor(private fb: FormBuilder) {
+    this.userForm = this.fb.group({
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      email: ['', [Validators.required, Validators.email]],
+      age: ['', [Validators.required, Validators.min(18), Validators.max(100)]]
+    });
+  }
 
-  validateTask(): boolean {
-    if (!this.newTask.trim()) {
-      this.errorMessage = 'El nombre de la tarea es requerido';
-      this.showError = true;
-      return false;
+  submitUser(): void {
+    if (this.userForm.valid) {
+      if (this.isEditing && this.editingUserId !== null) {
+        const userIndex = this.users.findIndex(u => u.id === this.editingUserId);
+        if (userIndex !== -1) {
+          this.users[userIndex] = {
+            id: this.editingUserId,
+            ...this.userForm.value
+          };
+        }
+      } else {
+        const newUser: User = {
+          id: this.users.length > 0 ? Math.max(...this.users.map(u => u.id ?? 0)) + 1 : 1,
+          ...this.userForm.value
+        };
+        this.users.push(newUser);
+      }
+      this.resetForm();
     }
-    this.showError = false;
-    this.errorMessage = '';
-    return true;
   }
 
-  addTask() {
-    if (!this.validateTask()) return;
-
-    const task: Task = {
-      id: Date.now(),
-      text: this.newTask.trim(),
-      completed: false,
-      dueDate: this.dueDate
-    };
-
-    this.tasks.push(task);
-    this.resetForm();
+  editUser(user: User): void {
+    this.isEditing = true;
+    this.editingUserId = user.id ?? null;
+    this.userForm.patchValue(user);
   }
 
-  resetForm() {
-    this.newTask = '';
-    this.dueDate = '';
-    this.showError = false;
-    this.errorMessage = '';
+  deleteUser(userId: number | undefined): void {
+    if (userId !== undefined) {
+      this.users = this.users.filter(u => u.id !== userId);
+    }
   }
 
-  toggleTask(task: Task) {
-    task.completed = !task.completed;
+  resetForm(): void {
+    this.userForm.reset();
+    this.isEditing = false;
+    this.editingUserId = null;
   }
 
-  deleteTask(task: Task) {
-    this.tasks = this.tasks.filter(t => t.id !== task.id);
-  }
-
-  getTaskStatus(task: Task): string {
-    if (task.completed) return 'completed';
-    const dueDate = new Date(task.dueDate);
-    const today = new Date();
-    return dueDate < today ? 'overdue' : '';
-  }
-
-  onDateChange(event: any) {
-    this.dueDate = event.detail.value;
+  trackByUserId(index: number, user: User): number {
+    return user.id ?? index;
   }
 }
