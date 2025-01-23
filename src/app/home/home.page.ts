@@ -33,11 +33,6 @@ export class HomePage {
       this.showError = true;
       return false;
     }
-    if (!this.dueDate) {
-      this.errorMessage = 'La fecha de entrega es requerida';
-      this.showError = true;
-      return false;
-    }
     this.showError = false;
     this.errorMessage = '';
     return true;

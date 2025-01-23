@@ -1,7 +1,7 @@
 <ion-header>
   <ion-toolbar>
     <ion-title class="titulo">
-      Mi Lista de Tareas
+      Usuarios
     </ion-title>
   </ion-toolbar>
 </ion-header>
@@ -10,7 +10,7 @@
   <div class="mi-tarjeta">
     <form (ngSubmit)="addTask()" #taskForm="ngForm" class="formulario">
       <ion-item>
-        <ion-label>Tarea:</ion-label>
+        <ion-label>Nombre:</ion-label>
         <ion-input
           [(ngModel)]="newTask"
           name="taskText"
@@ -19,23 +19,13 @@
         </ion-input>
       </ion-item>
 
-      <ion-item>
-        <ion-label>Fecha:</ion-label>
-        <ion-datetime
-          [(ngModel)]="dueDate"
-          name="dueDate"
-          [min]="today"
-          (ionChange)="onDateChange($event)"
-          [showDefaultButtons]="true">
-        </ion-datetime>
-      </ion-item>
 
       <div *ngIf="showError" class="mensaje-error">
         {{ errorMessage }}
       </div>
 
       <button class="boton-agregar" type="submit">
-        AGREGAR TAREA
+        AGREGAR USUARIO
       </button>
     </form>
   </div>
